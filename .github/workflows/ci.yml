@@ -1,0 +1,193 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CPM_SOURCE_CACHE: ${{ github.workspace }}/.cache/cpm
+  PRE_COMMIT_HOME: ${{ github.workspace }}/.cache/pre-commit
+
+jobs:
+  format:
+    name: format
+    if: ${{ vars.STORAGE_LENDER_CI_ENABLED == 'true' }}
+    runs-on: [self-hosted, linux, x64, storage-lender]
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Restore pre-commit cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+      - name: Run formatting and shell lint
+        run: |
+          python3 -m venv .cache/pre-commit-cli
+          .cache/pre-commit-cli/bin/pip install --disable-pip-version-check pre-commit==4.6.1
+          .cache/pre-commit-cli/bin/pre-commit run --all-files --show-diff-on-failure
+
+  spdx:
+    name: spdx
+    if: ${{ vars.STORAGE_LENDER_CI_ENABLED == 'true' }}
+    runs-on: [self-hosted, linux, x64, storage-lender]
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify SPDX headers
+        run: ./ci/check-spdx.sh
+
+  build-test:
+    name: build-test
+    if: ${{ vars.STORAGE_LENDER_CI_ENABLED == 'true' }}
+    runs-on: [self-hosted, linux, x64, storage-lender]
+    timeout-minutes: 60
+    env:
+      BUILD_DIR: build-test-github
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Restore CPM cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/cpm
+          key: cpm-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+      - name: Configure, build, and test
+        run: |
+          cmake -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build "$BUILD_DIR" --parallel "$(nproc)"
+          cmake --build "$BUILD_DIR" --target NoticeBundle
+          ctest --test-dir "$BUILD_DIR" --output-on-failure -LE hardware --output-junit "$BUILD_DIR/ctest-junit.xml"
+      - name: Upload build and test evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: build-test-evidence
+          path: |
+            build-test-github/ctest-junit.xml
+            build-test-github/compliance/*.tar.gz
+          if-no-files-found: warn
+          retention-days: 30
+
+  sanitizers:
+    name: sanitizers
+    if: ${{ vars.STORAGE_LENDER_CI_ENABLED == 'true' }}
+    runs-on: [self-hosted, linux, x64, storage-lender]
+    timeout-minutes: 60
+    env:
+      ASAN_OPTIONS: detect_leaks=0
+      BUILD_DIR: build-sanitizers-github
+      UBSAN_OPTIONS: print_stacktrace=1
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Restore CPM cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/cpm
+          key: cpm-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+      - name: Run sanitizer tests
+        run: |
+          cmake -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Debug -DENABLE_SANITIZERS=ON
+          cmake --build "$BUILD_DIR" --parallel "$(nproc)"
+          ctest --test-dir "$BUILD_DIR" --output-on-failure -LE hardware --output-junit "$BUILD_DIR/ctest-junit.xml"
+      - name: Upload sanitizer JUnit
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sanitizer-junit
+          path: build-sanitizers-github/ctest-junit.xml
+          if-no-files-found: warn
+          retention-days: 30
+
+  coverage:
+    name: coverage
+    if: ${{ vars.STORAGE_LENDER_CI_ENABLED == 'true' }}
+    runs-on: [self-hosted, linux, x64, storage-lender]
+    timeout-minutes: 60
+    env:
+      BUILD_DIR: build-coverage-github
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Restore CPM cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/cpm
+          key: cpm-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+      - name: Build coverage report
+        run: |
+          cmake -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON
+          cmake --build "$BUILD_DIR" --parallel "$(nproc)"
+          find "$BUILD_DIR" -name '*.gcda' -delete
+          ctest --test-dir "$BUILD_DIR" --output-on-failure -LE hardware --output-junit "$BUILD_DIR/ctest-junit.xml"
+          mkdir -p "$BUILD_DIR/coverage"
+          gcovr --root "$GITHUB_WORKSPACE" --gcov-ignore-errors=no_working_dir_found \
+            --filter "$GITHUB_WORKSPACE/client/include/" \
+            --filter "$GITHUB_WORKSPACE/client/src/" \
+            --filter "$GITHUB_WORKSPACE/ctl/src/" \
+            --filter "$GITHUB_WORKSPACE/server/include/" \
+            --filter "$GITHUB_WORKSPACE/server/src/" \
+            --filter "$GITHUB_WORKSPACE/wire/include/" \
+            --filter "$GITHUB_WORKSPACE/wire/src/" \
+            --html-details "$BUILD_DIR/coverage/index.html" \
+            --xml-pretty --xml "$BUILD_DIR/coverage/cobertura.xml" \
+            --print-summary "$BUILD_DIR"
+      - name: Upload coverage and JUnit
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-evidence
+          path: |
+            build-coverage-github/coverage/
+            build-coverage-github/ctest-junit.xml
+          if-no-files-found: warn
+          retention-days: 30
+
+  package-debian:
+    name: package-debian
+    if: ${{ vars.STORAGE_LENDER_CI_ENABLED == 'true' }}
+    runs-on: [self-hosted, linux, x64, storage-lender]
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Restore CPM cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/cpm
+          key: cpm-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+      - name: Build Debian packages
+        run: |
+          make -f debian/rules debian/control
+          dpkg-buildpackage -us -uc -b -d
+          mkdir -p artifacts/debian
+          cp ../*.deb artifacts/debian/
+      - name: Upload Debian packages
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: debian-packages
+          path: artifacts/debian/*.deb
+          if-no-files-found: warn
+          retention-days: 30

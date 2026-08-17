@@ -1,0 +1,99 @@
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+
+package nvidia.storage_lender.ctl.v1;
+
+enum MethodId {
+    METHOD_ID_UNSPECIFIED = 0;
+    GET_QUOTA_STATE = 1;
+    GET_COMMAND_LATENCY = 2;
+}
+
+enum QuotaMode {
+    QUOTA_MODE_UNSPECIFIED = 0;
+    QUOTA_MODE_ENFORCED = 1;
+    QUOTA_MODE_UNLIMITED = 2;
+}
+
+message GetQuotaStateRequest {}
+
+message GetCommandLatencyRequest {}
+
+message CommandLatencySummary {
+    string command = 1;
+    uint32 samples = 2;
+    uint32 errors = 3;
+    uint32 peak_in_flight = 4;
+    optional uint64 p50_us = 5;
+    optional uint64 p90_us = 6;
+    optional uint64 p99_us = 7;
+    optional uint64 max_us = 8;
+    optional uint64 event_loop_lag_p90_us = 9;
+    optional uint64 event_loop_lag_max_us = 10;
+    optional uint64 oldest_completed_unix_ms = 11;
+    optional uint64 newest_completed_unix_ms = 12;
+}
+
+message GetCommandLatencyResponse {
+    uint32 capacity_per_command = 1;
+    uint64 process_started_unix_ms = 2;
+    repeated CommandLatencySummary commands = 3;
+}
+
+message QuotaUsage {
+    uint64 sessions = 1;
+    uint64 transferred_fds = 2;
+    uint64 mapped_buffers = 3;
+    uint64 mapped_bytes = 4;
+    uint64 device_handles = 5;
+    uint64 completion_queues = 6;
+    uint64 submission_queues = 7;
+}
+
+message QuotaLimits {
+    optional uint64 sessions = 1;
+    optional uint64 transferred_fds = 2;
+    optional uint64 mapped_buffers = 3;
+    optional uint64 max_buffer_bytes = 4;
+    optional uint64 mapped_bytes = 5;
+    optional uint64 device_handles = 6;
+    optional uint64 completion_queues = 7;
+    optional uint64 submission_queues = 8;
+}
+
+message UsageTotals {
+    QuotaUsage active = 1;
+    QuotaUsage orphan = 2;
+}
+
+message PrincipalQuotaState {
+    string principal = 1;
+    UsageTotals usage = 2;
+    QuotaLimits limits = 3;
+    bool named_limit_override = 4;
+}
+
+message GetQuotaStateResponse {
+    uint64 generation = 1;
+    QuotaMode mode = 2;
+    UsageTotals global_usage = 3;
+    QuotaLimits global_limits = 4;
+    QuotaLimits default_principal_limits = 5;
+    repeated PrincipalQuotaState principals = 6;
+}

@@ -1,0 +1,2 @@
+usr/lib/*/libstorage_lender_client.so.@SOVERSION@
+usr/lib/*/libstorage_lender_client.so.@SOVERSION@.*

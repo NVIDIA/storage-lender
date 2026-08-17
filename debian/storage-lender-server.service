@@ -1,0 +1,19 @@
+[Unit]
+Description=Storage Lender Server
+Documentation=file:///usr/share/doc/storage-lender-server/
+After=local-fs.target
+
+[Service]
+Type=simple
+User=root
+Group=storage-lender
+RuntimeDirectory=storage-lender
+RuntimeDirectoryMode=0750
+UMask=0077
+ExecStart=/usr/sbin/storage-lender-server
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

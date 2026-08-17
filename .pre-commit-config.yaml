@@ -1,0 +1,43 @@
+minimum_pre_commit_version: "4.6.1"
+
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v22.1.8
+    hooks:
+      - id: clang-format
+        files: '\.(cpp|hpp|h)$'
+
+  - repo: local
+    hooks:
+      - id: cmake-format
+        name: cmake-format
+        entry: cmake-format --in-place
+        language: python
+        additional_dependencies:
+          - PyYAML==6.0.3
+          - cmakelang==0.6.13
+        files: '(^|/)(CMakeLists\.txt|[^/]+\.cmake(?:\.in)?)$'
+        exclude: '^cmake/CPM\.cmake$'
+        require_serial: true
+
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.13.1-1
+    hooks:
+      - id: shfmt
+        files: '\.(sh|bash)$'
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+      - id: shellcheck
+        files: '\.(sh|bash)$'
+
+  - repo: https://github.com/hukkin/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+        args:
+          - --extensions
+          - gfm
+        additional_dependencies:
+          - mdformat-gfm==1.0.0

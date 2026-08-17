@@ -1,0 +1,39 @@
+# Clangd index.
+/.cache/
+
+# Vscode files.
+/.vscode/
+
+# Packaging artifacts.
+/debian/.debhelper/
+/debian/libstorage-lender-client*/
+/debian/storage-lender-examples/
+/debian/storage-lender-server/
+/debian/tmp/
+/debian/*.debhelper
+/debian/*.debhelper.log
+/debian/*.substvars
+/debian/control
+/debian/debhelper-build-stamp
+/debian/files
+/debian/libstorage-lender-client?.install
+/obj-*/
+
+# Build artifacts.
+/build*
+
+# AI artifacts.
+/.agents/
+/.claude/
+/.codex/
+/.worktrees/
+/coverage.md
+/plan.md
+/research.md
+
+# Release artifacts.
+/release-artifacts/
+
+# Python artifacts.
+__pycache__/
+*.py[cod]

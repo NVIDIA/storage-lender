@@ -1,0 +1,4 @@
+usr/include/storage_lender/
+usr/lib/*/libstorage_lender_client.a
+usr/lib/*/libstorage_lender_client.so
+usr/lib/*/cmake/StorageLenderClient/

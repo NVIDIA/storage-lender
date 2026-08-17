@@ -1,0 +1,48 @@
+name: Feature request
+description: Propose new or changed non-security functionality
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Discuss substantial protocol, API, DMA, BAR0, security-boundary, or packaging changes with
+        maintainers before implementation.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Describe the concrete user or operator problem, including current limitations.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the observable behavior and affected interfaces.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Explain workarounds or designs considered and why they are insufficient.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Security and compatibility impact
+      description: Address trust boundaries, hardware needs, API compatibility, packaging, and migration.
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched existing issues for equivalent proposals.
+          required: true
+        - label: I agree to follow the [Code of Conduct](../../CODE_OF_CONDUCT.md).
+          required: true

@@ -1,0 +1,122 @@
+/*
+ * SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+
+package nvidia.storage_lender.v1;
+
+enum MethodId {
+    METHOD_ID_UNSPECIFIED = 0;
+    TRANSFER_FD = 1;
+    MAP_BUFFER = 2;
+    UNMAP_BUFFER = 3;
+    OPEN_DEVICE = 4;
+    CLOSE_DEVICE = 5;
+    GET_DEVICE_INFO = 6;
+    CREATE_COMPLETION_QUEUE = 7;
+    DELETE_COMPLETION_QUEUE = 8;
+    CREATE_SUBMISSION_QUEUE = 9;
+    DELETE_SUBMISSION_QUEUE = 10;
+}
+
+message TransferFdResponse {
+    uint32 fd_id = 1;
+}
+
+message MapBufferRequest {
+    uint32 fd_id = 1;
+    uint64 size = 2;
+    uint32 alignment = 3;
+}
+
+message MapBufferResponse {
+    uint64 iova = 1;
+}
+
+message UnmapBufferRequest {
+    uint64 iova = 1;
+}
+
+enum OpenDeviceMode {
+    SHARED = 0;
+    EXCLUSIVE = 1;
+}
+
+message OpenDeviceRequest {
+    string pci_address = 1;
+    OpenDeviceMode open_mode = 2;
+}
+
+message OpenDeviceResponse {
+    uint32 device_id = 1;
+}
+
+message CloseDeviceRequest {
+    uint32 device_id = 1;
+}
+
+message DeviceInfoRequest {
+    uint32 device_id = 1;
+}
+
+message NamespaceInfo {
+    uint32 ns_id = 1;
+    uint32 block_size = 2;
+    uint64 block_count = 3;
+}
+
+message DeviceInfoResponse {
+    string model = 1;
+    string pci_resource_path = 2;
+    uint32 max_queue_entries = 3;
+    uint32 page_size = 4;
+    uint32 num_io_queues = 5;
+    repeated NamespaceInfo namespaces = 6;
+}
+
+message CreateCompletionQueueRequest {
+    uint32 device_id = 1;
+    uint64 iova = 2;
+    uint32 queue_size = 3;
+}
+
+message CreateCompletionQueueResponse {
+    uint32 cq_id = 1;
+    uint64 cq_db_offset = 2;
+}
+
+message DeleteCompletionQueueRequest {
+    uint32 cq_id = 1;
+}
+
+message CreateSubmissionQueueRequest {
+    uint32 device_id = 1;
+    uint32 cq_id = 2;
+    uint64 iova = 3;
+    uint32 queue_size = 4;
+}
+
+message CreateSubmissionQueueResponse {
+    uint32 sq_id = 1;
+    uint64 sq_db_offset = 2;
+}
+
+message DeleteSubmissionQueueRequest {
+    uint32 sq_id = 1;
+}
+
+message Empty {}

@@ -1,0 +1,65 @@
+name: Hardware
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: storage-lender-spdk-hardware
+  cancel-in-progress: false
+
+jobs:
+  spdk-hardware:
+    name: spdk-hardware
+    if: ${{ vars.STORAGE_LENDER_HARDWARE_CI_ENABLED == 'true' }}
+    runs-on: [self-hosted, linux, x64, storage-lender-hardware]
+    environment: storage-lender-hardware
+    timeout-minutes: 90
+    env:
+      BUILD_DIR: build-spdk-hardware-github
+      CPM_SOURCE_CACHE: ${{ github.workspace }}/.cache/cpm
+      SPDK_ROOT: /usr/local/spdk
+    steps:
+      - name: Check out trusted source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Restore CPM cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/cpm
+          key: cpm-hardware-${{ runner.os }}-${{ hashFiles('CMakeLists.txt', 'cmake/**') }}
+      - name: Configure and build
+        run: |
+          cmake -S . -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          cmake --build "$BUILD_DIR" --parallel "$(nproc)"
+      - name: Provision SPDK device
+        run: |
+          device_bdf="$(./ci/setup-spdk-device.sh)"
+          printf 'DEVICE_BDF=%s\n' "$device_bdf" >> "$GITHUB_ENV"
+      - name: Run hardware tests
+        run: >-
+          sudo -E ctest --test-dir "$BUILD_DIR" --output-on-failure -L hardware
+          --output-junit "$BUILD_DIR/ctest-junit.xml"
+      - name: Upload hardware JUnit
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: hardware-junit
+          path: build-spdk-hardware-github/ctest-junit.xml
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Reset SPDK devices
+        if: ${{ always() }}
+        run: |
+          spdk_setup="$SPDK_ROOT/scripts/setup.sh"
+          if [[ -x "$spdk_setup" ]]; then
+            sudo "$spdk_setup" reset
+          fi

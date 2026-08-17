@@ -1,0 +1,15 @@
+component	version	relationship	distributed_in	license_expression	license_files	source
+CPM.cmake	0.42.1	vendored-source	source	MIT	licenses/MIT.txt	https://github.com/cpm-cmake/CPM.cmake
+SPDK	build-resolved	statically-linked	server	BSD-3-Clause AND BSD-2-Clause	licenses/BSD-3-Clause.txt,licenses/BSD-2-Clause.txt	https://github.com/spdk/spdk
+DPDK	build-resolved	statically-linked	server	BSD-3-Clause AND BSD-2-Clause AND ISC AND MIT	licenses/BSD-3-Clause.txt,licenses/BSD-2-Clause.txt,licenses/ISC.txt,licenses/MIT.txt	https://github.com/DPDK/dpdk
+ISA-L	build-resolved	statically-linked	server	BSD-3-Clause	licenses/BSD-3-Clause.txt	https://github.com/intel/isa-l
+spdlog	1.17.0	compiled-source	server	MIT	licenses/MIT.txt	https://github.com/gabime/spdlog
+toml++	3.4.0	header-only-compiled-source	server	MIT	licenses/MIT.txt	https://github.com/marzer/tomlplusplus
+fmt	12.1.0	compiled-source	server	MIT	licenses/MIT.txt	https://github.com/fmtlib/fmt
+Boost	build-resolved	dynamically-linked	not-bundled	BSL-1.0	licenses/BSL-1.0.txt	https://www.boost.org
+Protocol Buffers	build-resolved	dynamically-linked	not-bundled	BSD-3-Clause	licenses/BSD-3-Clause.txt	https://github.com/protocolbuffers/protobuf
+systemd libsystemd	build-resolved	dynamically-linked	not-bundled	LGPL-2.1-or-later	licenses/LGPL-2.1.txt	https://github.com/systemd/systemd
+OpenSSL	build-resolved	dynamically-linked	not-bundled	Apache-2.0	licenses/Apache-2.0.txt	https://github.com/openssl/openssl
+util-linux libuuid	build-resolved	dynamically-linked	not-bundled	BSD-3-Clause	licenses/BSD-3-Clause.txt	https://github.com/util-linux/util-linux
+numactl libnuma	build-resolved	dynamically-linked	not-bundled	LGPL-2.1-only	licenses/LGPL-2.1.txt	https://github.com/numactl/numactl
+GoogleTest	1.17.0	build-and-test-only	not-bundled	BSD-3-Clause	licenses/BSD-3-Clause.txt	https://github.com/google/googletest

@@ -1,0 +1,3 @@
+usr/sbin/storage-lender-server
+usr/bin/storage-lender-ctl
+etc/storage-lender/config.toml

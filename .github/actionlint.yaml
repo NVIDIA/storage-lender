@@ -1,0 +1,7 @@
+self-hosted-runner:
+  labels:
+    - storage-lender
+    - storage-lender-hardware
+config-variables:
+  - STORAGE_LENDER_CI_ENABLED
+  - STORAGE_LENDER_HARDWARE_CI_ENABLED

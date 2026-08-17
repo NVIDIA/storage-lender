@@ -1,0 +1,10 @@
+---
+Checks: >
+    *,
+    -altera-*,
+    -fuchsia-*,
+    -google-readability-todo,
+    -llvm*,
+    -modernize-use-trailing-return-type,
+    -readability-identifier-length
+WarningsAsErrors: ""

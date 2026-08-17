@@ -1,0 +1,116 @@
+# Storage Lender configuration schema. Unknown versions and fields are rejected.
+# Every table and value is optional; omitted values inherit the built-in defaults
+# documented below. This installed example intentionally selects unlimited quota
+# mode for backward compatibility. With no file, the server instead uses the
+# finite enforced quota defaults shown in the commented quota tables.
+schema_version = 1 # Built-in default: 1.
+
+[logging]
+# Runtime values: trace, debug, info, warn, error, critical, or off.
+# Debug builds contain trace and higher. Non-Debug builds contain debug and
+# higher, so they reject trace rather than silently clamping it.
+# Built-in default: Debug uses trace and non-Debug uses info. This example
+# explicitly selects info for consistent packaged operation.
+level = "info"
+
+[sockets.api]
+# Restart-only API endpoint built-in defaults. Each field may be overridden
+# independently. Account names are resolved at startup.
+path = "/run/storage-lender/api.sock"
+owner = "root"
+group = "storage-lender"
+mode = 0o660
+
+[sockets.ctl]
+# Restart-only root-only management endpoint built-in defaults. Each field may
+# be overridden independently.
+path = "/run/storage-lender/ctl.sock"
+owner = "root"
+group = "root"
+mode = 0o600
+
+[devices.default]
+# Built-in defaults requested from SPDK at controller attach. Either field may
+# be overridden independently. The controller may negotiate fewer queues.
+# num_io_queues accepts 1..65534 inclusive.
+num_io_queues = 65534
+# admin_command_timeout_ms accepts 10000..4294967295 inclusive; values below the
+# legacy 10-second minimum are rejected.
+admin_command_timeout_ms = 10000
+
+# Device keys accept bb:dd.f (domain 0000 implied) or dddd:bb:dd.f.
+# Missing fields inherit independently from devices.default.
+# [devices."03:00.0"]
+# num_io_queues = 2048
+# admin_command_timeout_ms = 30000
+
+[quotas]
+# Built-in default: "enforced" with the finite limits below. This installed
+# example explicitly uses "unlimited" to preserve pre-quota behavior while
+# retaining usage accounting. Limit tables are invalid in unlimited mode.
+mode = "unlimited"
+
+# Count dimensions are sessions, transferred_fds, mapped_buffers, device_handles,
+# completion_queues, and submission_queues. Byte dimensions are max_buffer_bytes
+# and mapped_bytes; bytes accept integers or strings suffixed B, KiB, MiB, or GiB.
+# The exact string "unlimited" disables a single ceiling. Zero is a hard limit
+# that denies positive growth; it never means unlimited.
+#
+# Every allocation is checked against both the daemon-wide global limits and the
+# resolved principal's limits. In enforced mode, omitted global and default
+# fields inherit the finite built-in values shown here. A named principal may
+# omit fields from its quotas table; those fields inherit from quotas.default.
+#
+# [quotas.global]
+# sessions = 64
+# transferred_fds = 256
+# mapped_buffers = 128
+# max_buffer_bytes = "8GiB"
+# mapped_bytes = "64GiB"
+# device_handles = 64
+# completion_queues = 512
+# submission_queues = 512
+#
+# [quotas.default]
+# sessions = 2
+# transferred_fds = 8
+# mapped_buffers = 8
+# max_buffer_bytes = "1GiB"
+# mapped_bytes = "2GiB"
+# device_handles = 2
+# completion_queues = 16
+# submission_queues = 16
+#
+# Built-in principal-mapping default: no named mappings. Within a named principal,
+# omitted uids or gids is an empty list, but at least one UID or GID is required.
+# UID mappings take precedence over effective primary GID mappings. Peers that
+# match neither use the default principal. Identity assignment is sticky for an
+# existing session; reloaded mappings apply only to newly admitted sessions.
+#
+# [principals.client_app]
+# uids = [1001]
+# gids = [2001]
+#
+# This named principal inherits transferred_fds, mapped_buffers, and
+# device_handles from quotas.default because those fields are omitted here.
+# [principals.client_app.quotas]
+# sessions = 8
+# max_buffer_bytes = "8GiB"
+# mapped_bytes = "32GiB"
+# completion_queues = 256
+# submission_queues = 256
+#
+# SIGHUP reloads the resolved policy atomically. Any [devices] change requires a
+# restart and rejects the complete reload. A missing file is a reload error even
+# though startup ENOENT uses built-in defaults. Existing allocations are
+# grandfathered when ceilings are lowered, while new growth is denied. An invalid
+# reload is rejected and the previous policy remains active.
+#
+# Client-originated open descriptors are bounded by the finite global sum
+# sessions + transferred_fds + mapped_buffers. This is not a process-wide FD bound:
+# SPDK, VFIO, logging, and other service descriptors remain outside quota accounting,
+# so RLIMIT_NOFILE and the service manager's LimitNOFILE must still be configured.
+#
+# Quotas assume trusted local clients and protect availability and fairness. They
+# are not an authorization boundary: a client receiving BAR0 access retains broad
+# controller access and must not be treated as a hostile tenant.

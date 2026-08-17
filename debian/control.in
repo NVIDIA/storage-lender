@@ -1,0 +1,64 @@
+Source: storage-lender
+Section: libs
+Priority: optional
+Maintainer: NVIDIA Storage Lender Maintainers <noreply@nvidia.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ dh-sequence-installsysusers,
+ cmake (>= 3.26),
+ libboost-fiber-dev,
+ libboost-context-dev,
+ libboost-coroutine-dev,
+ libboost-system-dev,
+ libboost-dev,
+ libprotobuf-dev,
+ protobuf-compiler,
+ libssl-dev,
+ libnuma-dev,
+ uuid-dev,
+ libisal-dev,
+Standards-Version: 4.6.2
+Rules-Requires-Root: no
+
+Package: libstorage-lender-client@SOVERSION@
+Section: libs
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Storage Lender client library (runtime)
+ Shared library that allows unprivileged clients to borrow NVMe I/O
+ queues from the Storage Lender server over a Unix domain socket.
+
+Package: libstorage-lender-client-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends:
+ libstorage-lender-client@SOVERSION@ (= ${binary:Version}),
+ libprotobuf-dev,
+ ${misc:Depends}
+Description: Storage Lender client library (development files)
+ Headers and static library for building applications that use the
+ Storage Lender client API.
+
+Package: storage-lender-examples
+Section: devel
+Architecture: any
+Depends:
+ libstorage-lender-client@SOVERSION@ (= ${binary:Version}),
+ storage-lender-server (= ${binary:Version}),
+ ${shlibs:Depends},
+ ${misc:Depends}
+Description: Storage Lender client provisioning example
+ Runnable C++ example and standalone source showing how to connect to the
+ Storage Lender service, register hugepage-backed queue memory, create an NVMe
+ I/O queue pair, map its BAR0 doorbells, and clean up safely. The example does
+ not submit NVMe I/O.
+
+Package: storage-lender-server
+Section: admin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Storage Lender server
+ Service that lends NVMe I/O queues to unprivileged clients over a
+ Unix domain socket. Requires access to VFIO devices and hugepages.

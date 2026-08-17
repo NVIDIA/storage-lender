@@ -1,0 +1,64 @@
+name: Bug report
+description: Report reproducible non-security behavior
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Do not report security vulnerabilities here. Follow SECURITY.md and use NVIDIA PSIRT's
+        private reporting channels.
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Identify the exact Storage Lender version or full commit SHA.
+      placeholder: 0.1.0 or 0123456789abcdef...
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: >-
+        Include OS, kernel, compiler, SPDK, hardware/BDF, IOMMU/VFIO, install method, and relevant
+        configuration with sensitive values removed.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide the smallest deterministic sequence, commands, or code that reproduces the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Remove credentials, personal information, internal hostnames, and unrelated data.
+      render: shell
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Submission checks
+      options:
+        - label: I searched existing issues for duplicates.
+          required: true
+        - label: This is not a security vulnerability.
+          required: true
+        - label: I agree to follow the [Code of Conduct](../../CODE_OF_CONDUCT.md).
+          required: true
