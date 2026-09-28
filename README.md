@@ -17,19 +17,21 @@ resource lifecycles, failure semantics, and the control/data-path split.
 
 ## Dependencies
 
-| Dependency                                         | Version                                     | How located                                 |
-| -------------------------------------------------- | ------------------------------------------- | ------------------------------------------- |
-| [SPDK](https://spdk.io)                            | ≥ 23.x                                      | `cmake/FindSPDK.cmake` (pkg-config, static) |
-| [Boost](https://www.boost.org)                     | ≥ 1.83                                      | `find_package(Boost REQUIRED ...)`          |
-| [Protobuf](https://protobuf.dev)                   | ≥ 3.21                                      | `find_package(Protobuf REQUIRED)`           |
-| [spdlog](https://github.com/gabime/spdlog)         | 1.17.0                                      | CPM (fetched at configure time)             |
-| [toml++](https://github.com/marzer/tomlplusplus)   | 3.4.0                                       | CPM (fetched at configure time)             |
-| [GoogleTest](https://github.com/google/googletest) | 1.17.0                                      | CPM (fetched at configure time)             |
-| C++ compiler                                       | Server: C++23; client API: C++17-compatible | GCC ≥ 13 or Clang ≥ 17                      |
-| CMake                                              | ≥ 3.26                                      | —                                           |
+| Dependency                                                               | Version                                     | How located                                 |
+| ------------------------------------------------------------------------ | ------------------------------------------- | ------------------------------------------- |
+| [Linux kernel](https://github.com/hdefreitasco/linux-storage-lender.git) | branch `storage-lender-main`                | Host kernel                                 |
+| [SPDK](https://github.com/hdefreitasco/spdk-storage-lender.git)          | branch `storage-lender-main`                | `cmake/FindSPDK.cmake` (pkg-config, static) |
+| [Boost](https://www.boost.org)                                           | ≥ 1.83                                      | `find_package(Boost REQUIRED ...)`          |
+| [Protobuf](https://protobuf.dev)                                         | ≥ 3.21                                      | `find_package(Protobuf REQUIRED)`           |
+| [spdlog](https://github.com/gabime/spdlog)                               | 1.17.0                                      | CPM (fetched at configure time)             |
+| [toml++](https://github.com/marzer/tomlplusplus)                         | 3.4.0                                       | CPM (fetched at configure time)             |
+| [GoogleTest](https://github.com/google/googletest)                       | 1.17.0                                      | CPM (fetched at configure time)             |
+| C++ compiler                                                             | Server: C++23; client API: C++17-compatible | GCC ≥ 13 or Clang ≥ 17                      |
+| CMake                                                                    | ≥ 3.26                                      | —                                           |
 
-SPDK must be built with DPDK (`--with-dpdk`) and installed so that `pkg-config` can find `spdk_nvme`
-and `spdk_env_dpdk`. The build links SPDK and DPDK statically.
+The required Linux and SPDK changes are maintained on the `storage-lender-main` branch of their
+linked repositories. SPDK must be built with DPDK (`--with-dpdk`) and installed so that `pkg-config`
+can find `spdk_nvme` and `spdk_env_dpdk`. The build links SPDK and DPDK statically.
 
 ## Building
 
