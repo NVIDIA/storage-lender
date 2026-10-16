@@ -32,6 +32,14 @@ repos:
       - id: shellcheck
         files: '\.(sh|bash)$'
 
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.9
+    hooks:
+      - id: ruff-check
+        args:
+          - --fix
+      - id: ruff-format
+
   - repo: https://github.com/hukkin/mdformat
     rev: 1.0.0
     hooks:

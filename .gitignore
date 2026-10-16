@@ -37,3 +37,7 @@
 # Python artifacts.
 __pycache__/
 *.py[cod]
+
+# Python packaging artifacts.
+/ctl_py/build/
+*.egg-info/

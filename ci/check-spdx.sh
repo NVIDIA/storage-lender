@@ -35,7 +35,7 @@ is_checked_file() {
     case "$1" in
         .gitlab-ci.yml | CMakeLists.txt | */CMakeLists.txt | debian/rules | \
             *.c | *.cc | *.cpp | *.cxx | *.h | *.hh | *.hpp | *.hxx | \
-            *.proto | *.cmake | *.cmake.in | *.sh)
+            *.proto | *.cmake | *.cmake.in | *.sh | *.py)
             return 0
             ;;
         *)
